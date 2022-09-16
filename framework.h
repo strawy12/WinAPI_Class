@@ -13,6 +13,7 @@
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
+#include <time.h>
 #include <string>
 
 #define PROGRAM_TITLE L"윈도우다아"

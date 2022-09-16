@@ -17,6 +17,9 @@ BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
+POINT g_ptObjPos = { 500,300 };
+POINT g_ptObjScale = { 100,100 };
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
 	_In_ LPWSTR    lpCmdLine,
@@ -26,10 +29,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
 	// TODO: 여기에 코드를 입력합니다.
-
 	// 전역 문자열을 초기화합니다.
 	LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 	LoadStringW(hInstance, IDC_WINAPICLASS, szWindowClass, MAX_LOADSTRING);
+	srand((unsigned int)time(NULL));
+
 	MyRegisterClass(hInstance);
 
 	// 애플리케이션 초기화를 수행합니다:
@@ -127,8 +131,57 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	HDC hdc;
+	static wchar_t str[100];
+	static int count;
+	static int yPos = 0;
+
+	static SIZE size;
+	PAINTSTRUCT ps;
+	RECT rt = { 0,0,1000,1000 };
+
 	switch (message)
 	{
+	case WM_CREATE:
+		count = 0;
+		CreateCaret(hWnd, NULL, 5, 15);
+		ShowCaret(hWnd);
+
+		break;
+	case WM_LBUTTONDOWN:
+	{
+		int x = LOWORD(lParam);
+		int y = HIWORD(lParam);
+
+
+	}
+	break;
+
+
+
+	case WM_KEYDOWN:
+	{
+		switch (wParam)
+		{
+		case VK_UP:
+		{
+
+		}
+		break;
+
+		}
+	}
+	break;
+	case WM_KEYUP:
+	{
+		switch (wParam)
+		{
+		case VK_UP:
+			break;
+
+		}
+	}
+	break;
 	case WM_COMMAND:
 	{
 		int wmId = LOWORD(wParam);
@@ -146,9 +199,39 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 	}
 	break;
+	case WM_CHAR:
+	{
+		if (wParam == VK_BACK && count > 0)
+		{
+			count--;
+		}
+
+		//else if (wParam == VK_RETURN)
+		//{
+		//	count = 0;
+		//	yPos = yPos + 20;
+		//}
+
+		else
+		{
+			str[count++] = wParam;
+		}
+
+		str[count] = '\0';
+
+		hdc = GetDC(hWnd);
+		int x = rand() % WINSIZEX;
+		int y = rand() % WINSIZEY;
+		str[0] = wParam;
+		TextOut(hdc, x, y, str, wcslen(str));
+
+		InvalidateRect(hWnd, nullptr, false);
+		ReleaseDC(hWnd, hdc);
+	}
+	break;
+
 	case WM_PAINT:
 	{
-		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hWnd, &ps);
 		//TextOut(hdc, 100, 100, wstr.c_str(), wstr.length());
 
@@ -177,44 +260,65 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			LineTo(hdc, WINSIZEX, posY);
 		}
 */
+/*int startPosX = 100;
+int size = 50;
+int	dist = 20;
+int xPos = 100, yPos = 100;
+bool drawRectangle = true;
 
-		int startPosX = 100;
-		int size = 50;
-		int	dist = 20;
-		int xPos = 100, yPos = 100;
-		bool drawRectangle = true;
+for (int i = 1; i <= 25; i++)
+{
+	if (drawRectangle)
+	{
+		Rectangle(hdc, xPos, yPos, xPos+ size, yPos+ size);
+	}
 
-		for (int i = 1; i <= 25; i++)
-		{
-			if (drawRectangle)
-			{
-				Rectangle(hdc, xPos, yPos, xPos+ size, yPos+ size);
-			}
+	else
+	{
+		Ellipse(hdc, xPos, yPos, xPos + size, yPos + size);
+	}
 
-			else
-			{
-				Ellipse(hdc, xPos, yPos, xPos + size, yPos + size);
-			}
-
-			if (i % 5 == 0)
-			{
-				xPos = startPosX;
-				yPos += size + dist;
-				drawRectangle = !drawRectangle;
-			}
-			else
-			{
-				xPos += size + dist;
-			}
-
-
-		}
+	if (i % 5 == 0)
+	{
+		xPos = startPosX;
+		yPos += size + dist;
+		drawRectangle = !drawRectangle;
+	}
+	else
+	{
+		xPos += size + dist;
+	}
 
 
+}*/
+/*HPEN hRedPen = CreatePen(PS_DOT, 1, RGB(255, 0, 0));
+HPEN hOldPen = (HPEN)SelectObject(hdc, hRedPen);
+
+
+
+HBRUSH hBlueBrush = CreateSolidBrush(RGB(0, 0, 255));
+HBRUSH hOldBrush = (HBRUSH)SelectObject(hdc, hBlueBrush);
+
+int xPos = g_ptObjPos.x - g_ptObjScale.x / 2;
+int yPos = g_ptObjPos.y - g_ptObjScale.y / 2;
+Rectangle(hdc,
+	xPos,
+	yPos,
+	xPos + g_ptObjScale.x,
+	yPos + g_ptObjScale.y);
+
+DeleteObject(hRedPen);
+DeleteObject(hBlueBrush);*/
+		GetTextExtentPoint(hdc, str, wcslen(str), &size);
+		SetCaretPos(size.cx, 0);
+		//TextOut(hdc, 0, yPos, str, wcslen(str));
+		//DrawText(hdc, str, wcslen(str), &rt, DT_LEFT | DT_TOP);
 		EndPaint(hWnd, &ps);
 	}
 	break;
 	case WM_DESTROY:
+		HideCaret(hWnd);
+		DestroyCaret();
 		PostQuitMessage(0);
 		break;
 	default:
