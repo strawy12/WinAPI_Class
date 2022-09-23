@@ -15,6 +15,7 @@
 #include <tchar.h>
 #include <time.h>
 #include <string>
+#include <math.h>
 
 #define PROGRAM_TITLE L"윈도우다아"
 #define WINSIZEX 1280
