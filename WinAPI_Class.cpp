@@ -128,60 +128,70 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	return TRUE;
 }
 
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	static POINT pos;
-	static SIZE size;
+	static VECTOR2 mousePos;
+	static VECTOR2 textPos;
+	static bool _isMouseDown;
+	static double speed;
 	switch (message)
 	{
 	case WM_CREATE:
-		pos = { 1,1 };
-		size = { WINSIZEX / 16 / 4, WINSIZEY / 9 / 4 };
-
-		break;
-	case WM_KEYDOWN:
 	{
-		switch(wParam)
-		{
-		case VK_UP:
-			if (pos.y <= 0)
-			{
-				pos.y = 8;
-				break;
-			}
-			pos.y--;
-			break;
-		case VK_LEFT:
-			if (pos.x <= 0)
-			{
-				pos.x = 15;
-				break;
-			}
+		mousePos = {};
+		textPos = { 100,100 };
+		_isMouseDown = false;
+		speed = 500;
+	}
+	break;
 
-				pos.x--;
-			break;
-		case VK_DOWN:
-			if (pos.y >= 8)
-			{
-				pos.y = 0;
-				break;
-			}
-				pos.y++;
-			break;
-		case VK_RIGHT:
-			if (pos.x >= 15)
-			{
-				pos.x = 0;
-				break;
-			}
+	case WM_TIMER:
+	{
+		VECTOR2 dir;
+		dir.x = mousePos.x - textPos.x;
+		dir.y = mousePos.y - textPos.y;
 
-				pos.x++;
-			break;
-		}
+		double mad = sqrt((dir.x * dir.x) + (dir.y * dir.y));
+
+		dir.x /= mad;
+		dir.y /= mad;
+
+		dir.x *= speed * 0.01f;
+		dir.y *= speed * 0.01f;
+
+		textPos.x += dir.x;
+		textPos.y += dir.y;
 
 		InvalidateRect(hWnd, nullptr, true);
 	}
 	break;
+
+	case WM_LBUTTONDOWN:
+	{
+		_isMouseDown = true;
+		mousePos.x = LOWORD(lParam);
+		mousePos.y = HIWORD(lParam);
+
+		SetTimer(hWnd, 1, 10, NULL);
+	}
+	break;
+	case WM_LBUTTONUP:
+	{
+		_isMouseDown = false;
+		KillTimer(hWnd, 1);
+		InvalidateRect(hWnd, nullptr, true);
+	}
+	break;
+
+	case WM_MOUSEMOVE:
+	{
+		if (_isMouseDown)
+		{
+			mousePos.x = LOWORD(lParam);
+			mousePos.y = HIWORD(lParam);
+		}
+	}
 
 	case WM_PAINT: // 무효화 영역(invalidate)이 발생한 경우
 	{
@@ -190,32 +200,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		// DC(Device Context): 그리기 위해 필요한 데이터 집합체
 		HDC hdc = BeginPaint(hWnd, &ps);
-
-		POINT point = pos;
-		point.x = pos.x * (WINSIZEX / 16) + ((WINSIZEX / 16) / 2);
-		point.y = pos.y* (WINSIZEY / 9) + ((WINSIZEY / 9) / 2);
-
-		HBRUSH brush = CreateSolidBrush(RGB(255, 0, 0));
-		SelectObject(hdc, brush);
-
-		Rectangle(hdc, point.x - size.cx, point.y - size.cy, point.x + size.cx, point.y + size.cy);
-
-		RECT rt = { winposx, winposy, winposx + WINSIZEX, winposy + WINSIZEY };
-		AdjustWindowRect(&rt, WS_OVERLAPPEDWINDOW, true);
-		MoveWindow(hWnd, winposx,winposy,rt.right - rt.left, rt.bottom - rt.top, true);
-
-		for (int i = 0; i < 10; ++i)
+		if (_isMouseDown)
 		{
-			MoveToEx(hdc, 0, i * WINSIZEY / 9, NULL);
-			LineTo(hdc, WINSIZEX, i * WINSIZEY / 9);
-		}
-		// 세로줄
-		for (int j = 0; j < 17; ++j)
-		{
-			MoveToEx(hdc, j * WINSIZEX / 16, 0, NULL);
-			LineTo(hdc, j * WINSIZEX / 16, WINSIZEY);
-		}
+			TextOut(hdc, (int)mousePos.x, (int)mousePos.y, L"00", 2);
 
+
+		}
+		TextOut(hdc, (int)textPos.x, (int)textPos.y, L"겜마고", 3);
 
 		EndPaint(hWnd, &ps);
 	}

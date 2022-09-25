@@ -22,3 +22,9 @@
 #define WINSIZEY 720
 
 using namespace std;
+
+typedef struct _vector2
+{
+	double x;
+	double y;
+} VECTOR2;
