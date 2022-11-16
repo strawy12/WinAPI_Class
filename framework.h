@@ -14,17 +14,9 @@
 #include <memory.h>
 #include <tchar.h>
 #include <time.h>
+#include <vector>
 #include <string>
 #include <math.h>
 
-#define PROGRAM_TITLE L"윈도우다아"
-#define WINSIZEX 1280
-#define WINSIZEY 720
-
 using namespace std;
 
-typedef struct _vector2
-{
-	double x;
-	double y;
-} VECTOR2;
